@@ -119,8 +119,9 @@ void mdss_panel_reset_skip_enable(bool enable);
 void mdss_dsi_ulps_enable(bool enable);
 void mdss_dsi_ulps_suspend_enable(bool enable);
 void mdss_fb_prim_panel_recover(void);
+#endif
 
-int mdss_prim_panel_fb_unblank(int timeout);
+#ifdef CONFIG_MACH_HUAQIN
 void mdss_fb_prim_panel_recover(void);
 #endif
 

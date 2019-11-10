@@ -145,5 +145,8 @@ struct lp855x_platform_data {
 	int size_program;
 	struct lp855x_rom_data *rom_data;
 };
-
+#ifdef CONFIG_MACH_HUAQIN
+int lp855x_init(void);
+int lp855x_brightness_ctrl(u32 level);
+#endif
 #endif
