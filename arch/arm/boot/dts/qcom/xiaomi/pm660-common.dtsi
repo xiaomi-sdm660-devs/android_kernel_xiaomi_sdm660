@@ -70,6 +70,7 @@
 	qcom,duty-pcts =
 		[3C 3C 3B 3A 3B 37 35 33 31 2E 2A 27 23
 		1F 1B 17 13 0E 09 05 00 00 00 00 00 00];
+	qcom,use-blink;
 };
 
 &pm660l_wled {
