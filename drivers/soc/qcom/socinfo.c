@@ -89,7 +89,7 @@ const char *hw_platform[] = {
 	[HW_PLATFORM_STP] = "STP",
 	[HW_PLATFORM_SBC] = "SBC",
 	[HW_PLATFORM_ADP] = "ADP",
-	[HW_PLATFORM_C8] = "JASON",
+	[HW_PLATFORM_C8] = "Forte",
 };
 
 enum {
