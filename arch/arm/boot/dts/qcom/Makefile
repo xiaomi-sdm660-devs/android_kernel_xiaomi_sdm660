@@ -213,6 +213,7 @@ endif
 dtb-$(CONFIG_ARCH_MSMHAMSTER) += msmhamster-rumi.dtb
 
 ifeq ($(CONFIG_MACH_XIAOMI_SDM660),y)
+dtb-$(CONFIG_MACH_XIAOMI_JASON) := jason-sdm660.dtb
 dtb-$(CONFIG_MACH_XIAOMI_TULIP) := sdm636-mtp-tulip.dtb
 dtb-$(CONFIG_MACH_XIAOMI_WAYNE) := sdm660-mtp-wayne.dtb sdm660-mtp-jasmine.dtb
 dtb-$(CONFIG_MACH_XIAOMI_WHYRED) := sdm636-mtp-whyred.dtb
