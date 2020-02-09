@@ -65,6 +65,7 @@
 
 /* common diff with msm-pm660l.dtsi */
 &red_led {
+	linux,name = "white";
 	qcom,start-idx = <0>;
 	qcom,idx-len = <8>;
 	qcom,duty-pcts = [ 00 0E 1C 2A 38 46 54 64 ];
