@@ -103,7 +103,9 @@ struct fpc1020_data {
 	bool wait_finger_down;
 	struct work_struct work;
 	bool proximity_state; /* 0:far 1:near */
+#ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_CORE_FORCE
 	struct input_handler input_handler;
+#endif
 };
 
 static irqreturn_t fpc1020_irq_handler(int irq, void *handle);
@@ -740,6 +742,7 @@ static const struct file_operations proc_file_fpc_ops = {
 };
 #endif
 
+#ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_CORE_FORCE
 static int input_connect(struct input_handler *handler,
 		struct input_dev *dev, const struct input_device_id *id) {
 	int rc;
@@ -798,6 +801,7 @@ static const struct input_device_id ids[] = {
 	},
 	{ },
 };
+#endif
 
 static int fpc1020_probe(struct platform_device *pdev)
 {
@@ -873,6 +877,7 @@ static int fpc1020_probe(struct platform_device *pdev)
 
 	wake_lock_init(&fpc1020->ttw_wl, WAKE_LOCK_SUSPEND, "fpc_ttw_wl");
 
+#ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_CORE_FORCE
 	fpc1020->input_handler.filter = input_filter;
 	fpc1020->input_handler.connect = input_connect;
 	fpc1020->input_handler.disconnect = input_disconnect;
@@ -883,6 +888,7 @@ static int fpc1020_probe(struct platform_device *pdev)
 		dev_err(dev, "failed to register key handler\n");
 		goto exit;
 	}
+#endif
 
 	rc = sysfs_create_group(&dev->kobj, &attribute_group);
 	if (rc) {
