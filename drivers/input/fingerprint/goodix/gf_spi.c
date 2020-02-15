@@ -366,6 +366,7 @@ static void irq_cleanup(struct gf_dev *gf_dev)
 	free_irq(gf_dev->irq, gf_dev);
 }
 
+#ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_CORE_FORCE
 static void gf_kernel_key_input(struct gf_dev *gf_dev, struct gf_key *gf_key)
 {
 	uint32_t key_input = 0;
@@ -398,6 +399,7 @@ static void gf_kernel_key_input(struct gf_dev *gf_dev, struct gf_key *gf_key)
 }
 
 extern bool capacitive_keys_enabled;
+#endif
 
 static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
@@ -455,8 +457,10 @@ static long gf_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 			retval = -EFAULT;
 			break;
 		}
+#ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_CORE_FORCE
 		if (capacitive_keys_enabled)
 			gf_kernel_key_input(gf_dev, &gf_key);
+#endif
 		break;
 
 #if defined(SUPPORT_NAV_EVENT)
