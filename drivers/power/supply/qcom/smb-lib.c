@@ -804,6 +804,7 @@ static const struct apsd_result *smblib_update_usb_type(struct smb_charger *chg)
 #ifdef CONFIG_MACH_XIAOMI_SDM660
 			chg->usb_psy_desc.type = apsd_result->pst;
 		}
+#endif 
 #ifdef CONFIG_MACH_MI
 		if (chg->unstandard_qc_detected) {
 			if (apsd_result->pst == POWER_SUPPLY_TYPE_USB_HVDCP
@@ -812,7 +813,6 @@ static const struct apsd_result *smblib_update_usb_type(struct smb_charger *chg)
 				chg->usb_psy_desc.type = POWER_SUPPLY_TYPE_USB_HVDCP;
 			}
 		}
-#endif
 #endif
 	}
 
@@ -2195,19 +2195,6 @@ int smblib_get_prop_batt_voltage_now(struct smb_charger *chg,
 	return rc;
 }
 
-int smblib_get_prop_batt_charge_full(struct smb_charger *chg,
-				union power_supply_propval *val)
-{
-	int rc;
-
-	if (!chg->bms_psy)
-			return -EINVAL;
-
-	rc = power_supply_get_property(chg->bms_psy,
-					POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN, val);
-	return rc;
-}
-
 int smblib_get_prop_batt_current_now(struct smb_charger *chg,
 				     union power_supply_propval *val)
 {
@@ -2291,7 +2278,7 @@ int smblib_get_prop_from_bms(struct smb_charger *chg,
 	return rc;
 }
 #ifdef CONFIG_MACH_LONGCHEER
-int smblib_get_prop_battery_full_design(struct smb_charger *chg,
+int smblib_get_prop_batt_charge_full(struct smb_charger *chg,
 				     union power_supply_propval *val)
 {
 	struct fg_chip *chip;
@@ -2304,6 +2291,19 @@ int smblib_get_prop_battery_full_design(struct smb_charger *chg,
 	else
 		val->intval = 4000;
 	return 0;
+}
+#elif defined (CONFIG_MACH_MI)
+int smblib_get_prop_batt_charge_full(struct smb_charger *chg,
+				union power_supply_propval *val)
+{
+	int rc;
+
+	if (!chg->bms_psy)
+			return -EINVAL;
+
+	rc = power_supply_get_property(chg->bms_psy,
+					POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN, val);
+	return rc;
 }
 #endif
 /***********************
@@ -2685,7 +2685,6 @@ static int smblib_force_vbus_voltage(struct smb_charger *chg, u8 val)
 
 	return rc;
 }
-#ifdef CONFIG_MACH_XIAOMI_SDM660
 #ifdef CONFIG_MACH_XIAOMI_WAYNE
 #define MAX_PLUSE_COUNT_ALLOWED 8
 #elif defined(CONFIG_MACH_XIAOMI_WHYRED)
@@ -2697,7 +2696,6 @@ static int smblib_force_vbus_voltage(struct smb_charger *chg, u8 val)
 #define HOT_THERMAL_LEVEL_TRH		12
 #else
 #define MAX_PLUSE_COUNT_ALLOWED 8
-#endif
 #endif
 int smblib_dp_dm(struct smb_charger *chg, int val)
 {

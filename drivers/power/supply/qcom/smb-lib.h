@@ -559,8 +559,6 @@ int smblib_get_prop_input_current_limited(struct smb_charger *chg,
 #ifdef CONFIG_MACH_MI
 int smblib_get_prop_batt_voltage_now(struct smb_charger *chg,
 				union power_supply_propval *val);
-int smblib_get_prop_batt_charge_full(struct smb_charger *chg,
-				union power_supply_propval *val);
 int smblib_get_prop_batt_current_now(struct smb_charger *chg,
 				union power_supply_propval *val);
 int smblib_get_prop_batt_temp(struct smb_charger *chg,
@@ -672,10 +670,8 @@ int smblib_set_prop_pr_swap_in_progress(struct smb_charger *chg,
 				const union power_supply_propval *val);
 void smblib_usb_typec_change(struct smb_charger *chg);
 #ifdef CONFIG_MACH_XIAOMI_SDM660
-#ifdef CONFIG_MACH_LONGCHEER
-int smblib_get_prop_battery_full_design(struct smb_charger *chg,
+int smblib_get_prop_batt_charge_full(struct smb_charger *chg,
 				union power_supply_propval *val);
-#endif
 int smblib_set_prop_rerun_apsd(struct smb_charger *chg,
 				const union power_supply_propval *val);
 #endif

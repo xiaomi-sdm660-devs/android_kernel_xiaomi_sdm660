@@ -463,7 +463,8 @@ static int smb2_parse_dt(struct smb2 *chip)
 	}
 #endif
 #endif
-#if defined (CONFIG_MACH_MI) && !defined (CONFIG_FB)
+
+#if !defined (CONFIG_MACH_MI) || (defined (CONFIG_MACH_MI)&& !defined (CONFIG_FB))
 	if (of_find_property(node, "qcom,thermal-mitigation", &byte_len)) {
 		chg->thermal_mitigation = devm_kzalloc(chg->dev, byte_len,
 			GFP_KERNEL);
@@ -609,9 +610,9 @@ static enum power_supply_property smb2_usb_props[] = {
 	POWER_SUPPLY_PROP_SDP_CURRENT_MAX,
 #ifdef CONFIG_MACH_XIAOMI_SDM660
 	POWER_SUPPLY_PROP_RERUN_APSD,
+#endif
 #ifdef CONFIG_MACH_MI
 	POWER_SUPPLY_PROP_TYPE_RECHECK,
-#endif
 #endif
 };
 
@@ -807,11 +808,11 @@ static int smb2_usb_set_prop(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_RERUN_APSD:
 		rc = smblib_set_prop_rerun_apsd(chg, val);
 		break;
+#endif
 #ifdef CONFIG_MACH_MI
 	case POWER_SUPPLY_PROP_TYPE_RECHECK:
 		rc = smblib_set_prop_type_recheck(chg, val);
 		break;
-#endif
 #endif
 	default:
 		pr_err("set prop %d is not supported\n", psp);
@@ -1231,11 +1232,11 @@ static enum power_supply_property smb2_batt_props[] = {
 	POWER_SUPPLY_PROP_FCC_STEPPER_ENABLE,
 #ifdef CONFIG_MACH_XIAOMI_SDM660
 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+#endif
 #ifdef CONFIG_MACH_LONGCHEER
 	POWER_SUPPLY_PROP_CHARGING_ENABLED,
 #elif defined (CONFIG_MACH_MI)
 	POWER_SUPPLY_PROP_CHARGER_TYPE,
-#endif
 #endif
 	POWER_SUPPLY_PROP_CHARGE_FULL,
 	POWER_SUPPLY_PROP_CYCLE_COUNT,
@@ -1341,11 +1342,6 @@ static int smb2_batt_get_prop(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_DP_DM:
 		val->intval = chg->pulse_cnt;
 		break;
-#ifdef CONFIG_MACH_LONGCHEER
-	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-		rc = smblib_get_prop_battery_full_design(chg, val);
-		break;
-#endif
 	case POWER_SUPPLY_PROP_RERUN_AICL:
 		val->intval = 0;
 		break;
@@ -1368,6 +1364,8 @@ static int smb2_batt_get_prop(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
 		rc = smblib_get_prop_batt_charge_full(chg, val);
 		break;
+#endif
+#ifdef CONFIG_MACH_MI
 	case POWER_SUPPLY_PROP_CHARGER_TYPE:
 		val->intval = chg->real_charger_type;
 		break;
