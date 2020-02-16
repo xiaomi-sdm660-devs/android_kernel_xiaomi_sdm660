@@ -754,6 +754,7 @@ static int gf_probe(struct platform_device *pdev)
 	int i;
 #ifdef CONFIG_MACH_XIAOMI_WAYNE
 	struct regulator *vreg;
+	int ret = 0;
 #endif
 
 	/* Initialize the driver data */
