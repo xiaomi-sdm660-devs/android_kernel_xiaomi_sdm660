@@ -69,4 +69,4 @@
 	};
 };
 
-#include "xiaomi/tulip-base.dtsi"
+#include "xiaomi/tulip.dtsi"

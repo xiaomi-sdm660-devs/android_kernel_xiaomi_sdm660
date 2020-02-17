@@ -1,4 +1,4 @@
-/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2019-2020, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -10,10 +10,8 @@
  * GNU General Public License for more details.
  */
 
-#include "sdm660-common-base.dtsi"
-#include "sdm636-common.dtsi"
 #include "tulip-camera-sensor-mtp.dtsi"
-#include "display/focaltech-ft8719-i2c.dtsi"
+#include "focaltech-ft8719-i2c.dtsi"
 
 /* msm-pm660.dtsi tulip specific diff */
 &pm660_charger {
@@ -32,9 +30,9 @@
 
 /* sdm660-mtp.dtsi tulip specific diff */
 &mtp_batterydata {
-	#include "batterydata/fg-gen3-batterydata-l6660cos-4000mah.dtsi"
-	#include "batterydata/fg-gen3-batterydata-l6660desay-4000mah.dtsi"
-	#include "batterydata/fg-gen3-batterydata-l6660atl-4000mah.dtsi"
+	#include "fg-gen3-batterydata-l6660cos-4000mah.dtsi"
+	#include "fg-gen3-batterydata-l6660desay-4000mah.dtsi"
+	#include "fg-gen3-batterydata-l6660atl-4000mah.dtsi"
 };
 
 &dsi_nt36672a_e7t_tianma_fhdplus_video {
@@ -87,4 +85,4 @@
 			regulator-always-on;
 		};
 	};
-};
+}; 

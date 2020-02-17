@@ -69,4 +69,4 @@
 	};
 };
 
-#include "xiaomi/whyred-base.dtsi"
+#include "xiaomi/whyred.dtsi"

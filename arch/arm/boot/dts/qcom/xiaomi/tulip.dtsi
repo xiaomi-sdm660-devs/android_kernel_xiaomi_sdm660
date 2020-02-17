@@ -9,16 +9,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#include "longcheer/common/longcheer-sdm660-base.dtsi"
-#include "longcheer/wayne/wayne-common-base.dtsi"
 
-&firmware {
-	android {
-		fstab {
-			vendor {
-				mnt_flags = "ro,barrier=1";
-				fsmgr_flags = "wait,slotselect";
-			};
-		};
-	};
-};
+#include "longcheer/common/longcheer-sdm660-base.dtsi"
+#include "longcheer/common/longcheer-sdm636.dtsi"
+#include "longcheer/tulip/tulip-base.dtsi"
