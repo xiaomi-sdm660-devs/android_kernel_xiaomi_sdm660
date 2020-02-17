@@ -13,7 +13,6 @@
 #include "sdm660-common-base.dtsi"
 #include "sdm636-common.dtsi"
 #include "tulip-camera-sensor-mtp.dtsi"
-#include "../sdm636-camera-sensor-mtp.dtsi"
 #include "display/focaltech-ft8719-i2c.dtsi"
 
 /* msm-pm660.dtsi tulip specific diff */

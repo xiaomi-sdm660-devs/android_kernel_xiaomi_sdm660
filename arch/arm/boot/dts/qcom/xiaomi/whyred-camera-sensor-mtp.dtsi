@@ -62,6 +62,10 @@
 };
 
 &cci {
+	/delete-node/ qcom,actuator@0;
+	/delete-node/ qcom,actuator@1;
+	/delete-node/ qcom,actuator@2;
+
 	actuator0: qcom,actuator@0 {
 		cell-index = <0>;
 		reg = <0x0>;
