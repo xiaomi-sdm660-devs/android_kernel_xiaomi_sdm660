@@ -1,4 +1,4 @@
-/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2019-2020, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -9,11 +9,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#include "sdm660-common-base.dtsi"
-#include "sdm636-common.dtsi"
+
 #include "whyred-camera-sensor-mtp.dtsi"
 #include "sdm660-novatek-i2c_d2s.dtsi"
-#include "display/sdm636-touchpad-whyred.dsi"
+#include "sdm636-touchpad-whyred.dsi"
 
 /* msm-pm660.dtsi whyred specific diff */
 &pm660_charger {
@@ -33,9 +32,9 @@
 
 /* sdm660-mtp.dtsi whyred specific diff */
 &mtp_batterydata {
-	#include "batterydata/fg-gen3-batterydata-l6650sun-4000mah.dtsi"
-	#include "batterydata/fg-gen3-batterydata-l6650cos-4000mah.dtsi"
-	#include "batterydata/fg-gen3-batterydata-l6650desay-4000mah.dtsi"
+	#include "fg-gen3-batterydata-l6650sun-4000mah.dtsi"
+	#include "fg-gen3-batterydata-l6650cos-4000mah.dtsi"
+	#include "fg-gen3-batterydata-l6650desay-4000mah.dtsi"
 };
 
 &dsi_nt36672_tianma_fhd_video {
@@ -64,4 +63,4 @@
 	qcom,mdss-dsi-bl-max-level = <4095>;
 	qcom,mdss-brightness-max-level = <4095>;
 	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
-};
+}; 
