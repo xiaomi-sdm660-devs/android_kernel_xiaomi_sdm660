@@ -33,6 +33,12 @@ menu "Xiaomi board selection"
 		help
 		  Support for Longcheer boards
 
+	config MACH_XIAOMI_LAVENDER
+		bool "Xiaomi lavender board"
+		select MACH_LONGCHEER
+		help
+		  Support for Xiaomi Redmi Note 7
+
 	config MACH_XIAOMI_TULIP
 		bool "Xiaomi tulip board"
 		select MACH_LONGCHEER
