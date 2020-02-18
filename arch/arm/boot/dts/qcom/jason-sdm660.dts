@@ -15,7 +15,7 @@
 /dts-v1/;
 
 #include "sdm660.dtsi"
-#include "xiaomi/mi/jason/jason-sdm660.dtsi"
+#include "xiaomi/jason.dtsi"
 #include "sdm660-internal-codec.dtsi"
 
 / {
