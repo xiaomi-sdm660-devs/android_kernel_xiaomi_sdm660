@@ -59,10 +59,6 @@
 	qcom,fg-jeita-hyst-temp = <0>;
 };
 
-&pm660_fg {
-	qcom,fg-recharge-voltage = <4340>;
-};
-
 /* common diff with msm-pm660l.dtsi */
 &red_led {
 	linux,name = "white";
