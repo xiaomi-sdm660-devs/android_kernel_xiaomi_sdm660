@@ -69,7 +69,6 @@
 	qcom,pause-lo = <500>;
 	qcom,pause-hi = <500>;
 	qcom,ramp-step-ms = <50>;
-	qcom,use-blink;
 };
 
 &pm660l_wled {
