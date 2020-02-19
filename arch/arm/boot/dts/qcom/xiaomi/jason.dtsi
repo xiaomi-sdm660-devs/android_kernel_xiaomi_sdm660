@@ -1,2 +1,2 @@
+#include "mi/mi-sdm660-common.dtsi"
 #include "mi/jason/jason-sdm660.dtsi"
-#include "mi/xiaomi-sdm660-common.dtsi"
