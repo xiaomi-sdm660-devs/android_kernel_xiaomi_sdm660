@@ -474,23 +474,7 @@ static DEVICE_ATTR(device_prepare, 0200, NULL, device_prepare_set);
 static ssize_t wakeup_enable_set(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
 {
-#ifndef CONFIG_MACH_MI
-	struct fpc1020_data *fpc1020 = dev_get_drvdata(dev);
-	ssize_t ret = count;
-
-	mutex_lock(&fpc1020->lock);
-	if (!strncmp(buf, "enable", strlen("enable")))
-		atomic_set(&fpc1020->wakeup_enabled, 1);
-	else if (!strncmp(buf, "disable", strlen("disable")))
-		atomic_set(&fpc1020->wakeup_enabled, 0);
-	else
-		ret = -EINVAL;
-	mutex_unlock(&fpc1020->lock);
-
-	return ret;
-#else
 	return count;
-#endif
 }
 static DEVICE_ATTR(wakeup_enable, 0200, NULL, wakeup_enable_set);
 
@@ -732,11 +716,7 @@ static int fpc1020_probe(struct platform_device *pdev)
 		fpc1020->pinctrl_state[i] = state;
 	}
 
-#ifdef CONFIG_MACH_MI
 	atomic_set(&fpc1020->wakeup_enabled, 1);
-#else
-	atomic_set(&fpc1020->wakeup_enabled, 0);
-#endif
 
 	fpc1020->irqf = IRQF_TRIGGER_RISING | IRQF_ONESHOT;
 	if (of_property_read_bool(dev->of_node, "fpc,enable-wakeup")) {
