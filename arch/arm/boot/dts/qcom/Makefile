@@ -212,17 +212,13 @@ endif
 
 dtb-$(CONFIG_ARCH_MSMHAMSTER) += msmhamster-rumi.dtb
 
-ifeq ($(CONFIG_MACH_XIAOMI_JASON),y)
-dtb-$(CONFIG_ARCH_SDM660) += jason-sdm660.dtb
-else ifeq ($(CONFIG_MACH_XIAOMI_LAVENDER),y)
-dtb-$(CONFIG_ARCH_SDM660) += sdm660-mtp-lavender.dtb
-else ifeq ($(CONFIG_MACH_XIAOMI_TULIP),y)
-dtb-$(CONFIG_ARCH_SDM660) += sdm636-mtp-tulip.dtb
-else ifeq ($(CONFIG_MACH_XIAOMI_WAYNE),y)
-dtb-$(CONFIG_ARCH_SDM660) += sdm660-mtp-wayne.dtb
-dtb-$(CONFIG_ARCH_SDM660) += sdm660-mtp-jasmine.dtb
-else ifeq ($(CONFIG_MACH_XIAOMI_WHYRED),y)
-dtb-$(CONFIG_ARCH_SDM660) += sdm636-mtp-whyred.dtb
+ifeq ($(CONFIG_MACH_XIAOMI_SDM660),y)
+dtb-$(CONFIG_MACH_XIAOMI_JASON) := jason-sdm660.dtb
+dtb-$(CONFIG_MACH_XIAOMI_LAVENDER) := sdm660-mtp-lavender.dtb
+dtb-$(CONFIG_MACH_XIAOMI_TULIP) := sdm636-mtp-tulip.dtb
+dtb-$(CONFIG_MACH_XIAOMI_WAYNE) := sdm660-mtp-wayne.dtb
+dtb-$(CONFIG_MACH_XIAOMI_WAYNE) += sdm660-mtp-jasmine.dtb
+dtb-$(CONFIG_MACH_XIAOMI_WHYRED) := sdm636-mtp-whyred.dtb
 else
 dtb-$(CONFIG_ARCH_SDM660) += sdm660-sim.dtb \
 	sdm660-internal-codec-cdp.dtb \
