@@ -997,7 +997,7 @@ static void wcd_mbhc_find_plug_and_report(struct wcd_mbhc *mbhc,
 		wcd_mbhc_report_plug(mbhc, 1, jack_type);
 	} else if (plug_type == MBHC_PLUG_TYPE_HIGH_HPH) {
 		if (mbhc->mbhc_cfg->detect_extn_cable) {
-#if defined(CONFIG_MACH_XIAOMI_WHYRED) || defined(CONFIG_MACH_XIAOMI_WAYNE) || defined(CONFIG_MACH_XIAOMI_TULIP)
+#ifdef CONFIG_MACH_LONGCHEER
 			/*Add for selfie stick not work  tangshouxing 9/6*/
 			if (mbhc->impedance_detect) {
 				mbhc->mbhc_cb->compute_impedance(mbhc,
@@ -1037,7 +1037,7 @@ static void wcd_mbhc_find_plug_and_report(struct wcd_mbhc *mbhc,
 						 3);
 			wcd_mbhc_hs_elec_irq(mbhc, WCD_MBHC_ELEC_HS_INS,
 					     true);
-#if defined(CONFIG_MACH_XIAOMI_WHYRED) || defined(CONFIG_MACH_XIAOMI_WAYNE) || defined(CONFIG_MACH_XIAOMI_TULIP)
+#ifdef CONFIG_MACH_LONGCHEER
 			}
 #endif
 		} else {
@@ -1177,7 +1177,7 @@ static bool wcd_is_special_headset(struct wcd_mbhc *mbhc)
 			if ((mbhc->zl > 20000) && (mbhc->zr > 20000)) {
 				pr_debug("%s: Selfie stick detected\n",__func__);
 				break;
-#if defined(CONFIG_MACH_XIAOMI_WHYRED) || defined(CONFIG_MACH_XIAOMI_WAYNE) || defined(CONFIG_MACH_XIAOMI_TULIP)
+#ifdef CONFIG_MACH_LONGCHEER
 			} else if ((mbhc->zl < 64) && (mbhc->zr > 20000)) {
 				ret = true;
 				mbhc->micbias_enable = true;
