@@ -294,7 +294,7 @@ int msm_dss_enable_vreg(struct dss_vreg *in_vreg, int num_vreg, int enable)
 				}
 			}
 			/* vddio lab ibb continus supply */
-#ifdef CONFIG_MACH_XIAOMI_WHYRED
+#ifdef CONFIG_MACH_XIAOMI_LAVENDER
 			if (enable_gesture_mode || synaptics_gesture_enable_flag) {
 #elif defined CONFIG_MACH_XIAOMI_TULIP
 			if (enable_gesture_mode || focal_gesture_mode) {
