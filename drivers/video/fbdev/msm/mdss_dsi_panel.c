@@ -36,7 +36,6 @@
 
 #ifdef CONFIG_MACH_LONGCHEER
 bool tianma_jdi_flag=0;
-extern bool first_set_bl;
 char g_lcd_id[128];
 struct mdss_dsi_ctrl_pdata *ctrl_pdata_whitepoint;
 EXPORT_SYMBOL(g_lcd_id);
