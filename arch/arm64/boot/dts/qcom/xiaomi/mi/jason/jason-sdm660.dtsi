@@ -58,7 +58,7 @@
 	};
 };
 
-/{
+&vendor {
 	mtp_batterydata: qcom,battery-data {
 		qcom,batt-id-range-pct = <15>;
 		#include "batterydata-c8-coslight-3500mAh.dtsi"
@@ -110,14 +110,14 @@
 };
 
 /* Blue led was used for powersupply of left button key backlight */
-&blue_led {
-	linux,name = "button-backlight";
-};
+/* &blue_led { */
+/* 	linux,name = "button-backlight"; */
+/* }; */
 
 /* Green led was used for powersupply of right button key backlight */
-&green_led {
-	linux,name = "button-backlight1";
-};
+/* &green_led { */
+/* 	linux,name = "button-backlight1"; */
+/* }; */
 
 &soc {
 	sound {
@@ -226,14 +226,11 @@
 		qcom,nq-clkreq = <&pm660_gpios 4 0x00>;
 		qcom,nq-esepwr = <&tlmm 45 0x00>;
 		interrupt-parent = <&tlmm>;
-		qcom,clk-src = "BBCLK3";
 		interrupts = <48 0>;
 		interrupt-names = "nfc_irq";
 		pinctrl-names = "nfc_active", "nfc_suspend";
 		pinctrl-0 = <&nfc_int_active &nfc_enable_active>;
 		pinctrl-1 = <&nfc_int_suspend &nfc_enable_suspend>;
-		clocks = <&clock_rpmcc RPM_LN_BB_CLK3_PIN>;
-		clock-names = "ref_clk";
 	};
 };
 

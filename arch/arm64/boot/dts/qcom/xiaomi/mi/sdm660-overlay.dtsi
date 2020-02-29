@@ -528,9 +528,9 @@
 	qcom,pet-time = <15000>;
 };
 
-&sensor_information15 {
-	qcom,sensor-name = "cam_therm0";
-};
+/* &sensor_information15 { */
+/* 	qcom,sensor-name = "cam_therm0"; */
+/* }; */
 
 &soc {
 	qcom,sensor-information {
