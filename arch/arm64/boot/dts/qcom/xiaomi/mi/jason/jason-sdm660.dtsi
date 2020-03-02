@@ -423,7 +423,7 @@
 
 
 &soc {
-	qcom,msm-adsp-loader {
+	qcom,lpass@15700000 {
 		qcom,firmware-name = "adsp_c8";
 	};
 };
