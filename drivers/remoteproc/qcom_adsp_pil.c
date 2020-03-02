@@ -434,7 +434,7 @@ static int adsp_remove(struct platform_device *pdev)
 
 static const struct adsp_data adsp_resource_init = {
 		.crash_reason_smem = 423,
-		.firmware_name = "adsp_c8.mdt",
+		.firmware_name = "adsp.mdt",
 		.pas_id = 1,
 		.has_aggre2_clk = false,
 		.ssr_name = "lpass",
