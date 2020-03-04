@@ -11,7 +11,7 @@
  */
 
 /* ramoops dts configuration */
-/ {
+/* {
 	reserved-memory {
 		ramoops_mem: ramoops_mem@ac000000 {
 			reg = <0 0x9ff00000 0 0x00100000>;
@@ -30,5 +30,18 @@
 		pmsg-size    = <0x0 0x00040000>;
 		record-size  = <0x0 0x00008000>;
 		ftrace-size  = <0x0 0x00020000>;
+	};
+}; */
+
+/ {
+	reserved-memory {
+		ramoops {
+			compatible = "removed-dma-pool", "ramoops";
+			no-map;
+			reg = <0 0x9ff00000 0 0x00100000>;
+			status = "ok";
+			console-size = <0x800000>;
+			pmsg-size = <0x400000>;
+		};
 	};
 };
