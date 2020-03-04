@@ -26,7 +26,12 @@
 
 &pm660l_wled {
 	qcom,fs-curr-ua = <18000>;
-	qcom,led-strings-list = [00 01];
+	qcom,string-cfg= <6>;
+	status = "ok";
+};
+
+&pm660l_lcdb {
+	status = "ok";
 };
 
 &dsi_nt36672_tianma_fhd_video {
