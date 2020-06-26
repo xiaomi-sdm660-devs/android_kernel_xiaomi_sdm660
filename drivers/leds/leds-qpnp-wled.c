@@ -310,7 +310,9 @@ static struct wled_vref_setting vref_setting_pmi8994 = {
 static struct wled_vref_setting vref_setting_pmi8998 = {
 	60000, 397500, 22500, 127500,
 };
-
+#ifdef CONFIG_MACH_HUAQIN
+static int first_set_prev_state;
+#endif
 /**
  *  qpnp_wled - wed data structure
  *  @ cdev - led class device
@@ -1098,7 +1100,12 @@ static void qpnp_wled_work(struct work_struct *work)
 			goto unlock_mutex;
 		}
 	}
-
+#ifdef CONFIG_MACH_HUAQIN
+	if (first_set_prev_state == 1) {
+		wled->prev_state = true;
+		first_set_prev_state = 0;
+	}
+#endif
 	if (!!level != wled->prev_state) {
 		if (!!level) {
 			/*
@@ -2588,9 +2595,12 @@ static int qpnp_wled_parse_dt(struct qpnp_wled *wled)
 			"qcom,en-9b-dim-res");
 	wled->en_phase_stag = of_property_read_bool(pdev->dev.of_node,
 			"qcom,en-phase-stag");
+#ifdef CONFIG_MACH_HUAQIN
 	wled->en_cabc = of_property_read_bool(pdev->dev.of_node,
 			"qcom,en-cabc");
-
+#else
+	wled->en_cabc = false;
+#endif
 	if (wled->pmic_rev_id->pmic_subtype == PM660L_SUBTYPE)
 		wled->max_strings = QPNP_PM660_WLED_MAX_STRINGS;
 	else
@@ -2706,7 +2716,12 @@ static int qpnp_wled_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "wled config failed\n");
 		return rc;
 	}
-
+#ifdef CONFIG_MACH_HUAQIN
+	if (strnstr(saved_command_line, "androidboot.mode=ffbm-01",
+		    strlen(saved_command_line))) {
+		first_set_prev_state = 1;
+	}
+#endif
 	INIT_WORK(&wled->work, qpnp_wled_work);
 	wled->ramp_ms = QPNP_WLED_RAMP_DLY_MS;
 	wled->ramp_step = 1;
