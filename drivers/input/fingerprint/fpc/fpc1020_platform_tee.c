@@ -61,11 +61,22 @@
 
 #define NUM_PARAMS_REG_ENABLE_SET 2
 
+#ifdef CONFIG_MACH_HUAQIN
+#define RELEASE_WAKELOCK_W_V "release_wakelock_with_verification"
+#define RELEASE_WAKELOCK "release_wakelock"
+#define START_IRQS_RECEIVED_CNT "start_irqs_received_counter"
+#endif
 #ifdef CONFIG_MACH_LONGCHEER
 extern int fpsensor;
 #endif
 
 static const char * const pctl_names[] = {
+#ifdef CONFIG_MACH_HUAQIN
+	"fpc1020_avdd_active",
+	"fpc1020_avdd_suspend",
+	"fpc1020_vddio_active",
+	"fpc1020_vddio_suspend",
+#endif
 	"fpc1020_reset_reset",
 	"fpc1020_reset_active",
 #ifndef CONFIG_MACH_MI
@@ -107,6 +118,11 @@ struct fpc1020_data {
 	bool wait_finger_down;
 	struct work_struct work;
 	bool proximity_state; /* 0:far 1:near */
+#ifdef CONFIG_MACH_HUAQIN
+	bool compatible_enabled;
+	int nbr_irqs_received;
+	int nbr_irqs_received_counter_start;
+#endif
 #ifdef CONFIG_TOUCHSCREEN_COMMON
 	struct input_handler input_handler;
 #endif
@@ -556,6 +572,156 @@ static ssize_t irq_ack(struct device *dev,
 }
 static DEVICE_ATTR(irq, 0600, irq_get, irq_ack);
 
+#ifdef CONFIG_MACH_HUAQIN
+static ssize_t compatible_all_set(struct device *dev,
+	struct device_attribute *attr, const char *buf, size_t count)
+{
+	int rc;
+	int i;
+	int irqf;
+	struct  fpc1020_data *fpc1020 = dev_get_drvdata(dev);
+	dev_err(dev, "compatible all enter %d\n", fpc1020->compatible_enabled);
+	if (!strncmp(buf, "enable", strlen("enable")) && fpc1020->compatible_enabled != 1){
+		rc = fpc1020_request_named_gpio(fpc1020, "fpc,gpio_irq",
+			&fpc1020->irq_gpio);
+		if (rc)
+			goto exit;
+
+		rc = fpc1020_request_named_gpio(fpc1020, "fpc,gpio_rst",
+			&fpc1020->rst_gpio);
+		dev_err(dev, "fpc request reset result = %d\n",rc);
+		if (rc)
+			goto exit;
+		fpc1020->fingerprint_pinctrl = devm_pinctrl_get(dev);
+		if (IS_ERR(fpc1020->fingerprint_pinctrl)) {
+			if (PTR_ERR(fpc1020->fingerprint_pinctrl) == -EPROBE_DEFER) {
+				dev_info(dev, "pinctrl not ready\n");
+				rc = -EPROBE_DEFER;
+				goto exit;
+			}
+			dev_err(dev, "Target does not use pinctrl\n");
+			fpc1020->fingerprint_pinctrl = NULL;
+			rc = -EINVAL;
+			goto exit;
+		}
+
+		for (i = 0; i < ARRAY_SIZE(fpc1020->pinctrl_state); i++) {
+			const char *n = pctl_names[i];
+			struct pinctrl_state *state =
+				pinctrl_lookup_state(fpc1020->fingerprint_pinctrl, n);
+			if (IS_ERR(state)) {
+				dev_err(dev, "cannot find '%s'\n", n);
+				rc = -EINVAL;
+				goto exit;
+			}
+			dev_info(dev, "found pin control %s\n", n);
+			fpc1020->pinctrl_state[i] = state;
+		}
+		rc = select_pin_ctl(fpc1020, "fpc1020_vddio_active");
+		if (rc)
+			goto exit;
+		usleep_range(PWR_ON_SLEEP_MIN_US, PWR_ON_SLEEP_MAX_US);
+
+		rc = select_pin_ctl(fpc1020, "fpc1020_reset_reset");
+		if (rc)
+			goto exit;
+		rc = select_pin_ctl(fpc1020, "fpc1020_irq_active");
+		if (rc)
+			goto exit;
+		irqf = IRQF_TRIGGER_RISING | IRQF_ONESHOT;
+		if (of_property_read_bool(dev->of_node, "fpc,enable-wakeup")) {
+			irqf |= IRQF_NO_SUSPEND;
+			device_init_wakeup(dev, 1);
+		}
+		rc = devm_request_threaded_irq(dev, gpio_to_irq(fpc1020->irq_gpio),
+			NULL, fpc1020_irq_handler, irqf,
+			dev_name(dev), fpc1020);
+		if (rc) {
+			dev_err(dev, "could not request irq %d\n",
+				gpio_to_irq(fpc1020->irq_gpio));
+		goto exit;
+		}
+		dev_dbg(dev, "requested irq %d\n", gpio_to_irq(fpc1020->irq_gpio));
+
+		/* Request that the interrupt should be wakeable */
+		enable_irq_wake(gpio_to_irq(fpc1020->irq_gpio));
+		fpc1020->compatible_enabled = 1;
+		if (of_property_read_bool(dev->of_node, "fpc,enable-on-boot")) {
+			dev_info(dev, "Enabling hardware\n");
+			(void)device_prepare(fpc1020, true);
+#ifdef LINUX_CONTROL_SPI_CLK
+		(void)set_clks(fpc1020, false);
+#endif
+		}
+
+		hw_reset(fpc1020);
+
+		rc = select_pin_ctl(fpc1020, "fpc1020_avdd_active");
+		if (rc)
+			goto exit;
+		usleep_range(PWR_ON_SLEEP_MIN_US, PWR_ON_SLEEP_MAX_US);
+
+	} else if (!strncmp(buf, "disable", strlen("disable")) && fpc1020->compatible_enabled != 0) {
+		if (gpio_is_valid(fpc1020->irq_gpio)) {
+			devm_gpio_free(dev, fpc1020->irq_gpio);
+			pr_info("remove irq_gpio success\n");
+		}
+		if (gpio_is_valid(fpc1020->rst_gpio)) {
+			devm_gpio_free(dev, fpc1020->rst_gpio);
+			pr_info("remove rst_gpio success\n");
+		}
+		devm_free_irq(dev, gpio_to_irq(fpc1020->irq_gpio), fpc1020);
+
+		rc = select_pin_ctl(fpc1020, "fpc1020_avdd_suspend");
+		if (rc)
+			goto exit;
+		usleep_range(PWR_ON_SLEEP_MIN_US, PWR_ON_SLEEP_MAX_US);
+
+		rc = select_pin_ctl(fpc1020, "fpc1020_vddio_suspend");
+		if (rc)
+			goto exit;
+		usleep_range(PWR_ON_SLEEP_MIN_US, PWR_ON_SLEEP_MAX_US);
+
+		fpc1020->compatible_enabled = 0;
+	}
+	return count;
+exit:
+	return -EINVAL;
+}
+static DEVICE_ATTR(compatible_all, 0200, NULL, compatible_all_set);
+
+static ssize_t handle_wakelock_cmd(struct device *dev,
+	struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct  fpc1020_data *fpc1020 = dev_get_drvdata(dev);
+	ssize_t ret = count;
+
+	mutex_lock(&fpc1020->lock);
+	if (!strncmp(buf, RELEASE_WAKELOCK_W_V,
+		min(count, strlen(RELEASE_WAKELOCK_W_V)))) {
+		if (fpc1020->nbr_irqs_received_counter_start ==
+				fpc1020->nbr_irqs_received) {
+			wake_unlock(&fpc1020->ttw_wl);
+		} else {
+			dev_dbg(dev, "Ignore releasing of wakelock %d != %d",
+				fpc1020->nbr_irqs_received_counter_start,
+				fpc1020->nbr_irqs_received);
+		}
+	} else if (!strncmp(buf, RELEASE_WAKELOCK, min(count,
+				strlen(RELEASE_WAKELOCK)))) {
+		wake_unlock(&fpc1020->ttw_wl);
+	} else if (!strncmp(buf, START_IRQS_RECEIVED_CNT,
+			min(count, strlen(START_IRQS_RECEIVED_CNT)))) {
+		fpc1020->nbr_irqs_received_counter_start =
+		fpc1020->nbr_irqs_received;
+	} else
+		ret = -EINVAL;
+	mutex_unlock(&fpc1020->lock);
+
+	return ret;
+}
+static DEVICE_ATTR(handle_wakelock, 0200, NULL, handle_wakelock_cmd);
+#else
 static ssize_t irq_enable_set(struct device *dev,
 	struct device_attribute *attr,
 	const char *buf, size_t count)
@@ -578,6 +744,7 @@ static ssize_t irq_enable_set(struct device *dev,
         return rc ? rc : count;
 }
 static DEVICE_ATTR(irq_enable, S_IWUSR | S_IRUSR | S_IRGRP | S_IWGRP , NULL, irq_enable_set);
+#endif
 
 static ssize_t proximity_state_set(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t count)
@@ -614,7 +781,12 @@ static struct attribute *attributes[] = {
 	&dev_attr_clk_enable.attr,
 	&dev_attr_irq.attr,
 	&dev_attr_fingerdown_wait.attr,
+#ifndef CONFIG_MACH_HUAQIN
 	&dev_attr_irq_enable.attr,
+#else
+	&dev_attr_handle_wakelock.attr,
+	&dev_attr_compatible_all.attr,
+#endif
 	&dev_attr_proximity_state.attr,
 	NULL
 };
