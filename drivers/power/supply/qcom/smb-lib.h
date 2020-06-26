@@ -331,6 +331,9 @@ struct smb_charger {
 
 	/* votables */
 	struct votable		*dc_suspend_votable;
+#ifdef CONFIG_MACH_HUAQIN
+	struct votable		*usb_suspend_votable;
+#endif
 	struct votable		*fcc_votable;
 	struct votable		*fv_votable;
 	struct votable		*usb_icl_votable;
@@ -369,6 +372,9 @@ struct smb_charger {
 	struct delayed_work	monitor_boost_charge_work;
 	struct delayed_work     charger_type_recheck;
 	struct delayed_work	check_vbus_work;
+#elif defined(CONFIG_MACH_HUAQIN)
+	struct delayed_work     update_current_work;
+	struct delayed_work	typec_disable_cmd_work;
 #endif
 
 	/* cached status */
@@ -674,12 +680,19 @@ void smblib_usb_typec_change(struct smb_charger *chg);
 #ifdef CONFIG_MACH_XIAOMI_SDM660
 int smblib_get_prop_batt_charge_full(struct smb_charger *chg,
 				union power_supply_propval *val);
+#ifndef CONFIG_MACH_HUAQIN
 int smblib_set_prop_rerun_apsd(struct smb_charger *chg,
 				const union power_supply_propval *val);
+#endif
 #endif
 
 int smblib_init(struct smb_charger *chg);
 int smblib_deinit(struct smb_charger *chg);
+#ifdef CONFIG_MACH_HUAQIN
+int smblib_get_chg_otg_present(struct smb_charger *chg,union power_supply_propval *val);
+int smblib_get_prop_batt_resistance_id(struct smb_charger *chg,
+				     union power_supply_propval *val);
+#endif
 #ifdef CONFIG_MACH_MI
 /* this function is used for rapid plug in/out charger to notify policy engine to update typec mode */
 extern void notify_typec_mode_changed_for_pd(void);

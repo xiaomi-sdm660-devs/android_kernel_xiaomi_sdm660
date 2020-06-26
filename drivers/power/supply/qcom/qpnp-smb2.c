@@ -62,6 +62,16 @@ extern int hwc_check_global;
 extern bool is_poweroff_charge;
 #endif
 #endif
+#ifdef CONFIG_MACH_HUAQIN
+#include <linux/proc_fs.h>
+#include <linux/fs.h>
+#include <linux/uaccess.h>
+#include <linux/slab.h>
+#define LENGTH 32
+#define CHG_NAME "driver/chg_enable"
+static int charger_limit_enbale = 1;
+static struct proc_dir_entry *proc_chg;
+#endif
 
 #define SMB2_DEFAULT_WPWR_UW	8000000
 
@@ -228,6 +238,10 @@ struct smb2 {
 	struct smb_dt_props	dt;
 	bool			bad_part;
 };
+
+#ifdef CONFIG_MACH_HUAQIN
+struct smb_charger *smbchg_dev;
+#endif
 
 #ifdef CONFIG_MACH_LONGCHEER
 static int __debug_mask = 0xFF;
@@ -619,6 +633,9 @@ static enum power_supply_property smb2_usb_props[] = {
 #ifdef CONFIG_MACH_MI
 	POWER_SUPPLY_PROP_TYPE_RECHECK,
 #endif
+#ifdef CONFIG_MACH_HUAQIN
+	POWER_SUPPLY_PROP_USB_OTG,
+#endif
 };
 
 static int smb2_usb_get_prop(struct power_supply *psy,
@@ -748,6 +765,11 @@ static int smb2_usb_get_prop(struct power_supply *psy,
 		rc = smblib_get_prop_type_recheck(chg, val);
 		break;
 #endif
+#ifdef CONFIG_MACH_HUAQIN
+	case POWER_SUPPLY_PROP_USB_OTG:
+		rc = smblib_get_chg_otg_present(chg, val);
+		break;
+#endif
 	default:
 		pr_err("get prop %d is not supported in usb\n", psp);
 		rc = -EINVAL;
@@ -809,7 +831,7 @@ static int smb2_usb_set_prop(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_SDP_CURRENT_MAX:
 		rc = smblib_set_prop_sdp_current_max(chg, val);
 		break;
-#ifdef CONFIG_MACH_XIAOMI_SDM660
+#if defined (CONFIG_MACH_XIAOMI_SDM660) && !defined (CONFIG_MACH_HUAQIN)
 	case POWER_SUPPLY_PROP_RERUN_APSD:
 		rc = smblib_set_prop_rerun_apsd(chg, val);
 		break;
@@ -1242,6 +1264,9 @@ static enum power_supply_property smb2_batt_props[] = {
 	POWER_SUPPLY_PROP_CHARGING_ENABLED,
 #elif defined(CONFIG_MACH_MI)
 	POWER_SUPPLY_PROP_CHARGER_TYPE,
+#elif defined(CONFIG_MACH_HUAQIN)
+	POWER_SUPPLY_PROP_RESISTANCE_ID,
+	POWER_SUPPLY_PROP_CHARGING_ENABLED,
 #endif
 	POWER_SUPPLY_PROP_CHARGE_FULL,
 	POWER_SUPPLY_PROP_CYCLE_COUNT,
@@ -1365,7 +1390,7 @@ static int smb2_batt_get_prop(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_FCC_STEPPER_ENABLE:
 		val->intval = chg->fcc_stepper_mode;
 		break;
-#ifdef CONFIG_MACH_XIAOMI_SDM660
+#if defined (CONFIG_MACH_XIAOMI_SDM660) && !defined (CONFIG_MACH_HUAQIN)
 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
 		rc = smblib_get_prop_batt_charge_full(chg, val);
 		break;
@@ -1373,6 +1398,19 @@ static int smb2_batt_get_prop(struct power_supply *psy,
 #ifdef CONFIG_MACH_MI
 	case POWER_SUPPLY_PROP_CHARGER_TYPE:
 		val->intval = chg->real_charger_type;
+		break;
+#elif defined(CONFIG_MACH_HUAQIN)
+	case POWER_SUPPLY_PROP_CHARGING_ENABLED:
+
+		val->intval = get_effective_result(chg->usb_icl_votable);
+		if (val->intval < 0) /* no votes */
+			val->intval = 1;
+		else
+			val->intval = !!val->intval;
+
+		break;
+	case POWER_SUPPLY_PROP_RESISTANCE_ID:
+		rc = smblib_get_prop_batt_resistance_id(chg, val);
 		break;
 #endif
 	default:
@@ -1474,6 +1512,11 @@ static int smb2_batt_set_prop(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMITED:
 		rc = smblib_set_prop_input_current_limited(chg, val);
 		break;
+#ifdef CONFIG_MACH_HUAQIN
+	case POWER_SUPPLY_PROP_CHARGING_ENABLED:
+		rc = vote(chg->usb_icl_votable,DEFAULT_VOTER, !val->intval, 0);
+		break;
+#endif
 	default:
 		rc = -EINVAL;
 	}
@@ -1890,7 +1933,11 @@ static int smb2_init_hw(struct smb2 *chip)
 	vote(chg->pd_disallowed_votable_indirect, HVDCP_TIMEOUT_VOTER,
 			true, 0);
 	vote(chg->pd_disallowed_votable_indirect, MICRO_USB_VOTER,
+#ifdef CONFIG_MACH_HUAQIN
+			true, 0);
+#else
 			chg->micro_usb_mode, 0);
+#endif
 	vote(chg->hvdcp_enable_votable, MICRO_USB_VOTER,
 			chg->micro_usb_mode, 0);
 
@@ -2808,6 +2855,64 @@ static int lct_unregister_powermanager(struct smb_charger *chg)
 #endif
 #endif
 
+#ifdef CONFIG_MACH_HUAQIN
+struct smb_charger *chip_b;
+
+static ssize_t chg_read_proc_enable(struct file *file, char __user *page, size_t size, loff_t *ppos)
+{
+	char *ptr = page;
+	if (*ppos)
+		return 0;
+
+	ptr += sprintf(ptr, "%d\n", charger_limit_enbale);
+
+	*ppos += ptr - page;
+	return (ptr - page);
+}
+
+static ssize_t chg_write_proc_enable(struct file *file, const char __user *buff, size_t size, loff_t *ppos) {
+
+	char write_buff[LENGTH] = {0};
+	int rc = 0;
+
+	if (size > LENGTH)
+		return -EFAULT;
+	if (copy_from_user(&write_buff,buff,size))
+		return -ENOMEM;
+
+	if (write_buff[0] == '1') {
+		charger_limit_enbale = 1;
+		rc = vote(chip_b->chg_disable_votable, DEFAULT_VOTER, !charger_limit_enbale, 0);
+		pr_info("chg set enable\n");
+		if (rc < 0)
+			pr_debug("chg set enable charging fail\n");
+	}else if (write_buff[0] == '0') {
+		charger_limit_enbale = 0;
+		rc = vote(chip_b->chg_disable_votable, DEFAULT_VOTER, !charger_limit_enbale, 0);
+		pr_info("chg set disenable\n");
+		if (rc < 0)
+			pr_debug("chg set disenable charging fail\n");
+	}
+	return size;
+}
+
+static struct file_operations file_ops = {
+	.read = chg_read_proc_enable,
+	.write = chg_write_proc_enable,
+};
+
+static int proc_create_chg_enable(void)
+{
+	int rc = 0;
+
+	proc_chg = proc_create(CHG_NAME,0664,NULL, &file_ops);
+	if (proc_chg == NULL)
+		return -ENOMEM;
+
+	return rc;
+}
+#endif
+
 static int smb2_probe(struct platform_device *pdev)
 {
 	struct smb2 *chip;
@@ -2834,7 +2939,9 @@ static int smb2_probe(struct platform_device *pdev)
 	chg->mode = PARALLEL_MASTER;
 	chg->irq_info = smb2_irqs;
 	chg->name = "PMI";
-
+#ifdef CONFIG_MACH_HUAQIN
+	smbchg_dev = chg;
+#endif
 	chg->regmap = dev_get_regmap(chg->dev->parent, NULL);
 	if (!chg->regmap) {
 		pr_err("parent regmap is missing\n");
@@ -3011,6 +3118,11 @@ static int smb2_probe(struct platform_device *pdev)
 	chg->charging_enabled = true;
 #endif
 
+#ifdef CONFIG_MACH_HUAQIN
+	chip_b = chg;
+	proc_create_chg_enable();
+#endif
+
 	pr_info("QPNP SMB2 probed successfully usb:present=%d type=%d batt:present = %d health = %d charge = %d\n",
 		usb_present, chg->real_charger_type,
 		batt_present, batt_health, batt_charge_type);
@@ -3062,7 +3174,9 @@ static int smb2_remove(struct platform_device *pdev)
 	power_supply_unregister(chg->usb_port_psy);
 	regulator_unregister(chg->vconn_vreg->rdev);
 	regulator_unregister(chg->vbus_vreg->rdev);
-
+#ifdef CONFIG_MACH_HUAQIN
+	proc_remove(proc_chg);
+#endif
 	platform_set_drvdata(pdev, NULL);
 	return 0;
 }

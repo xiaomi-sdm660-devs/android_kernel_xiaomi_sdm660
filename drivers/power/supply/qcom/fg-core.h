@@ -311,6 +311,8 @@ struct fg_batt_props {
 	int		fastchg_curr_ma;
 #ifdef CONFIG_MACH_MI
 	int		nom_cap_uah;
+#elif defined (CONFIG_MACH_HUAQIN)
+	int		batt_capacity_mah;
 #endif
 };
 
