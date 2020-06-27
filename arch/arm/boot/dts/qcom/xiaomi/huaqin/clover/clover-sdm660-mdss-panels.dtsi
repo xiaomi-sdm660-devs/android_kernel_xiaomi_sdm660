@@ -1,0 +1,2 @@
+#include "dsi-panel-nt51021-boe-video.dtsi"
+#include "dsi-panel-nt51021-boe-10wu-video.dtsi"

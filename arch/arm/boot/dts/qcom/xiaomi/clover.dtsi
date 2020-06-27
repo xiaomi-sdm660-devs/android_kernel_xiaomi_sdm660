@@ -1,0 +1,2 @@
+#include "huaqin/clover-overlay.dtsi"
+#include "xiaomi-sdm660-common.dtsi"
